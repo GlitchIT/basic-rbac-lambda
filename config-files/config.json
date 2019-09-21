@@ -1,0 +1,11 @@
+{
+	"domain":"yourdomain.com",
+	"configKey":"SUPERSECRETKEYHERE",
+	"roles":{
+		"admin":"UUIDFORADMINROLEHERE",
+		"beta": "UUIDFOROTHERROLEHERE"
+	},
+	"contentKey":"articles",
+	"settingsKey":"settings/settings.json",
+	"usersKey": "members/pool/members.json"
+}

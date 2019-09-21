@@ -1,0 +1,11 @@
+{
+	"users": {
+		"d38e0905-2bc5-4b02-9c3c-f38eb773c681": {
+			"username": "inkiebeard",
+			"pass": "SUPERSECRETHASH",
+			"name": "Aaron Toomey",
+			"roles": ["UUIDFORADMINROLEHERE"],
+			"email": "toomey.aaron@gmail.com"
+		}
+	}
+}

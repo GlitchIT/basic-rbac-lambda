@@ -1,0 +1,12 @@
+{
+  "name": "flatcms-lambda",
+  "version": "0.0.1",
+  "author": "Aaron Toomey <aaron@inkiebeard.com>",
+  "dependencies": {
+    "jsonwebtoken": "^8.5.1",
+    "uuid": "^3.3.2"
+  },
+  "scripts": {
+    "build": "./build.sh"
+  }
+}
