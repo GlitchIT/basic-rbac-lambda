@@ -1,7 +1,8 @@
 {
   "name": "flatcms-lambda",
   "version": "0.0.1",
-  "author": "Aaron Toomey <aaron@inkiebeard.com>",
+  "description": "Basic auth and routing for serverless api, see README for more detail",
+  "author": "Aaron Toomey <aaron@inkiebeard.codes>",
   "dependencies": {
     "jsonwebtoken": "^8.5.1",
     "uuid": "^3.3.2"

@@ -1,109 +1,119 @@
 // dependencies
-const Auth = require('./auth')
-const {responseBuilder, getConfig} = require('./utils')
-const users = require('./users')
-const {debug} = require('./runtime')
+const Auth = require("./auth");
+const { responseBuilder, getConfig } = require("./utils");
+const users = require("./users");
+const { debug } = require("./runtime");
 
-exports.handler = async (event) => {
+exports.handler = async event => {
   if (debug) {
-    console.log(JSON.stringify(event, null, 4))
+    console.log(JSON.stringify(event, null, 4));
   }
-  // config = await gets3Obj('config.json', true).catch(err => {
-  //   responseBuilder("Can't get default config for site: " + err.message, 500)
-  // })
-
-  // settings = await gets3Obj(`${config.settingsKey}/config.json`).catch(err => {
-  //   responseBuilder("Can't get default settings for site: " + err.message, 500)
-  // })
 
   return handleEvent(event).catch(err => {
-    return responseBuilder(`Error: ${err.message}`, 500, event.headers)
-  })
-}
+    return responseBuilder(`Error: ${err.message}`, 500, event.headers);
+  });
+};
 
-const handleEvent = async (event) => {
+const handleEvent = async event => {
   if (debug) {
-    console.log('getting config')
+    console.log("getting config");
   }
-  const config = await getConfig()
-  if (typeof event.body === 'string') {
-    event.body = JSON.parse(event.body)
+  const { config, settings } = await getConfig();
+  if (typeof event.body === "string") {
+    event.body = JSON.parse(event.body);
   }
-  if (event.path.toLowerCase() !== '/flatcms' && event.path !== '/') {
-    return handlePath(event)
+  if (event.path.toLowerCase() !== "/flatcms" && event.path !== "/") {
+    return handlePath(event);
   }
-  if (!event.body.hasOwnProperty('action')) {
-    return notYetImplmented('No action in event body')
+  if (!event.body.hasOwnProperty("action")) {
+    return notYetImplmented("No action in event body");
   }
   if (debug) {
-    console.log('switch based on action: ' + event.body.action)
+    console.log("switch based on action: " + event.body.action);
   }
   switch (true) {
     case event.body.action === "signin":
-      if (event.headers && (event.headers.hasOwnProperty('Authorization') || event.headers.hasOwnProperty('authorization'))) {
+      if (
+        event.headers &&
+        (event.headers.hasOwnProperty("Authorization") ||
+          event.headers.hasOwnProperty("authorization"))
+      ) {
         // TODO proper auth
-        const auth = new Auth({})
+        const auth = new Auth({}, config);
         if (auth.verify(event.headers.Authorization)) {
-          return responseBuilder("Successfully logged in", 200, {...event.headers})
+          return responseBuilder("Successfully logged in", 200, {
+            ...event.headers
+          });
         } else {
-          return responseBuilder("Session expired", 401, {})
+          return responseBuilder("Session expired", 401, {});
         }
       }
-      validateAction('signin', event.body.data)
-      return users.signin(event.body.data)
+      validateAction("signin", event.body.data);
+      return users.signin(event.body.data, config);
 
     case event.body.action === "register":
-      validateAction('register', event.body.data)
-      return users.register(event.body.data)
+      validateAction("register", event.body.data);
+      return users.register(event.body.data);
 
     case event.body.action === "checkUser":
-      validateAction('checkUser', event.body.data)
-      if (debug) { console.log(`checkUser: ${event.body.data.user}, ${event.body.data.role}`)}
-      return users.checkPerms(event.body.data)
+      validateAction("checkUser", event.body.data);
+      if (debug) {
+        console.log(
+          `checkUser: ${event.body.data.user}, ${event.body.data.role}`
+        );
+      }
+      return users.checkPerms(event.body.data);
 
-    case config.extensions && Array.isArray(config.extensions) && config.extensions.indexOf(event.body.action) !== -1:
+    case config.extensions &&
+      Array.isArray(config.extensions) &&
+      config.extensions.indexOf(event.body.action) !== -1:
       try {
-        validateAction(event.body.action, event.body.data)
-        const actionHandler = require(`./extensions/${event.body.action}`)
-        const res = actionHandler(event.body.data)
-        if (res.hasOwnProperty('body') && res.hasOwnProperty('statusCode')) {
-          return res
+        validateAction(event.body.action, event.body.data);
+        const actionHandler = require(`./extensions/${event.body.action}`);
+        const res = actionHandler(event.body.data);
+        if (res.hasOwnProperty("body") && res.hasOwnProperty("statusCode")) {
+          return res;
         } else {
-          return responseBuilder(res, 200)
+          return responseBuilder(res, 200);
         }
       } catch (e) {
-        return responseBuilder(`Error in handling extension: ${event.body.action} - ${e.message}`)
+        return responseBuilder(
+          `Error in handling extension: ${event.body.action} - ${e.message}`
+        );
       }
 
     default:
-      return notYetImplmented(event.body.action)
+      return notYetImplmented(event.body.action);
   }
-}
+};
 
-const handlePath = async (event) => {
+const handlePath = async event => {
   //TODO handle pathing in another module
-  return notYetImplmented('Path handling')
-}
+  return notYetImplmented("Path handling");
+};
 
-const notYetImplmented = (message) => {
-  return responseBuilder(`Not implemented: ${message}`, 200)
-}
+const notYetImplmented = message => {
+  return responseBuilder(`Not implemented: ${message}`, 200);
+};
 
 const validateAction = (actionName, reqData) => {
   if (debug) {
-    console.log(`Validating ${actionName}`)
+    console.log(`Validating ${actionName}`);
   }
-  const schemas = require('./schemas')
-  if (schemas[actionName].type === 'object' && typeof reqData === schemas[actionName]) {
+  const schemas = require("./schemas");
+  if (
+    schemas[actionName].type === "object" &&
+    typeof reqData === schemas[actionName]
+  ) {
     const failed = schemas[actionName].filter(attr => {
-      return Object.keys(reqData).indexOf(attr) === -1
-    })
+      return Object.keys(reqData).indexOf(attr) === -1;
+    });
     if (failed.length) {
       if (debug) {
-        console.log(`Missing: ${failed.join()}`)
+        console.log(`Missing: ${failed.join()}`);
       }
-      throw new Error(`Missing: ${failed.join()}`)
+      throw new Error(`Missing: ${failed.join()}`);
     }
   }
   // TODO other validation outside of objects
-}
+};
