@@ -4,7 +4,7 @@
   "description": "Basic auth and routing for serverless api, see README for more detail",
   "author": "Aaron Toomey <aaron@inkiebeard.codes>",
   "dependencies": {
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "uuid": "^3.3.2"
   },
   "scripts": {
